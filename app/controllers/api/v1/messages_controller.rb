@@ -4,7 +4,7 @@ class Api::V1::MessagesController < ApplicationController
     user = User.find(params[:user_id])
 
     unless conversation.users.exists?(user.id)
-      return render json: { error: "User not part of this conversation"}, status: :forbidden
+      return render json: { error: "User not part of this conversation" }, status: :forbidden
     end
     message = conversation.messages.create!(
       content: params[:content],

@@ -3,7 +3,7 @@ class Api::V1::ConversationsController < ApplicationController
     user_ids = params[:user_ids]
 
     if user_ids.length == 2
-      existing_conversation = Conversation.joins(:conversation_participants).where(conversation_participants: {user_id: user_ids}).group("conversations.id").having("COUNT(conversation_participants.user_id) = 2").first
+      existing_conversation = Conversation.joins(:conversation_participants).where(conversation_participants: { user_id: user_ids }).group("conversations.id").having("COUNT(conversation_participants.user_id) = 2").first
 
       if existing_conversation
         return render json: existing_conversation, status: :ok
@@ -22,8 +22,8 @@ class Api::V1::ConversationsController < ApplicationController
 
     render json: {
       id: conversation.id,
-      participants: conversation.users.map {|u|
-        {id: u.id, email: u.email}
+      participants: conversation.users.map { |u|
+        { id: u.id, email: u.email }
       }
     }, status: :created
   end
@@ -36,7 +36,7 @@ class Api::V1::ConversationsController < ApplicationController
             conversation_id: conversation.id,
             user_id: user.id
           )
-      return render json: {error: "User not part of this conversation"}, status: :forbidden
+      return render json: { error: "User not part of this conversation" }, status: :forbidden
     end
 
     render json: {
