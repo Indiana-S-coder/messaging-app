@@ -1,13 +1,14 @@
 class Api::V1::ConversationsController < ApplicationController
   def create
     user_ids = params[:user_ids]
-if user_ids.length == 2
-  existing_conversation = Conversation.joins(:conversation_participants).where(conversation_participants: {user_id: user_ids}).group("conversations.id").having("COUNT(conversation_participants.user_id) = 2").first
 
-  if existing_conversation
-    return render json: existing_conversation, status: :ok
-  end
-end
+    if user_ids.length == 2
+      existing_conversation = Conversation.joins(:conversation_participants).where(conversation_participants: {user_id: user_ids}).group("conversations.id").having("COUNT(conversation_participants.user_id) = 2").first
+
+      if existing_conversation
+        return render json: existing_conversation, status: :ok
+      end
+    end
 
     conversation = Conversation.create!
 
@@ -22,9 +23,9 @@ end
     render json: {
       id: conversation.id,
       participants: conversation.users.map {|u|
-      {id: u.id, email: u.email}
-    }
-      }, status: :created
+        {id: u.id, email: u.email}
+      }
+    }, status: :created
   end
 
   def show
