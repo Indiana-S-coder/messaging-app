@@ -30,6 +30,14 @@ class Api::V1::ConversationsController < ApplicationController
 
   def show
     conversation = Conversation.find(params[:id])
+    user = User.find(params[:user_id])
+
+    unless ConversationParticipant.exists?(
+            conversation_id: conversation.id,
+            user_id: user.id
+          )
+      return render json: {error: "User not part of this conversation"}, status: :forbidden
+    end
 
     render json: {
       id: conversation.id,
@@ -39,14 +47,7 @@ class Api::V1::ConversationsController < ApplicationController
         email: u.email
       }
     },
-    messages: conversation.messages.order(created_at: :asc).map {|m|
-    {
-      id: m.id,
-      content: m.content,
-      sender_id: m.user_id,
-      created_at: m.created_at
-    }
-  }
+    messages: conversation.messages.order(created_at: :desc).limit(20).reverse
 }
   end
 
