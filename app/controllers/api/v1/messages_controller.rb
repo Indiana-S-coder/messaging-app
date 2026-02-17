@@ -1,16 +1,30 @@
 class Api::V1::MessagesController < ApplicationController
-  def create
-    conversation = Conversation.find(params[:conversation_id])
-    user = User.find(params[:user_id])
+  before_action :set_conversation, only: [:create]
+  before_action :set_user, only: [:create]
 
-    unless conversation.users.exists?(user.id)
+  def create
+    policy = ConversationPolicy.new(@user, @conversation)
+
+
+    unless policy.show?
       return render json: { error: "User not part of this conversation" }, status: :forbidden
     end
-    message = conversation.messages.create!(
+    message = @conversation.messages.create!(
       content: params[:content],
-      user: user,
+      user: @user,
     )
 
-    render json: message, status: :created
+    render json: MessageSerializer.new(message).as_json, status: :created
+  end
+
+
+  private
+
+  def set_conversation
+    @conversation = Conversation.find(params[:conversation_id])
+  end
+
+  def set_user
+    @user = User.find(params[:user_id])
   end
 end

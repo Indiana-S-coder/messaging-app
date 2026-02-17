@@ -1,4 +1,7 @@
 class Api::V1::ConversationsController < ApplicationController
+  before_action :set_conversation, only: [:show]
+  before_action :set_user, only: [:show, :index]
+
   def create
     user_ids = params[:user_ids]
 
@@ -29,24 +32,19 @@ class Api::V1::ConversationsController < ApplicationController
   end
 
   def show
-    conversation = Conversation.find(params[:id])
-    user = User.find(params[:user_id])
+    policy = ConversationPolicy.new(@user, @conversation)
 
-    unless ConversationParticipant.exists?(
-            conversation_id: conversation.id,
-            user_id: user.id
-          )
+    unless policy.show?
       return render json: { error: "User not part of this conversation" }, status: :forbidden
     end
 
-    messages= conversation.messages.order(created_at: :desc).limit(20).reverse
+    messages= @conversation.messages.order(created_at: :desc).limit(20).reverse
 
-    render json: ConversationSerializer.new(conversation, messages: messages).as_json
+    render json: ConversationSerializer.new(@conversation, messages: messages).as_json
   end
 
 def index
-  user = User.find(params[:user_id])
-  conversations = user.conversations
+  conversations = @user.conversations
 
   render json: conversations.map { |c|
 {
@@ -54,4 +52,14 @@ def index
   last_message: c.messages.order(created_at: :desc).first&.content
 }}
 end
+end
+
+private
+
+def set_conversation
+  @conversation = Conversation.find(params[:id])
+end
+
+def set_user
+  @user = User.find(params[:user_id])
 end
