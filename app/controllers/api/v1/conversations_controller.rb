@@ -39,16 +39,9 @@ class Api::V1::ConversationsController < ApplicationController
       return render json: { error: "User not part of this conversation" }, status: :forbidden
     end
 
-    render json: {
-      id: conversation.id,
-      participants: conversation.users.map { |u|
-      {
-        id: u.id,
-        email: u.email
-      }
-    },
-    messages: conversation.messages.order(created_at: :desc).limit(20).reverse
-}
+    messages= conversation.messages.order(created_at: :desc).limit(20).reverse
+
+    render json: ConversationSerializer.new(conversation, messages: messages).as_json
   end
 
 def index
