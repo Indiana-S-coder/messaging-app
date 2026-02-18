@@ -44,7 +44,7 @@ class Api::V1::ConversationsController < ApplicationController
   end
 
 def index
-  conversations = @user.conversations
+  conversations = @user.conversations.includes(:messages)
 
   render json: conversations.map { |c|
 {

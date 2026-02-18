@@ -1,5 +1,5 @@
 class ConversationPolicy
-  def initializer(user, conversation)
+  def initialize(user, conversation)
     @user = user
     @conversation = conversation
   end
