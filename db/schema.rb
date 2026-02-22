@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_15_101501) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_22_163650) do
   create_table "conversation_participants", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "conversation_id", null: false
@@ -49,6 +49,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_15_101501) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "encrypted_password", default: "", null: false
+    t.string "password_digest"
   end
 
   add_foreign_key "conversation_participants", "conversations"
