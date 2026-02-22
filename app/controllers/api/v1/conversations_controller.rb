@@ -38,20 +38,44 @@ class Api::V1::ConversationsController < ApplicationController
       return render json: { error: "User not part of this conversation" }, status: :forbidden
     end
 
-    messages= @conversation.messages.order(created_at: :desc).limit(20).reverse
+    # Cursor pagination: Fetch messages descending by ID (most recent first)
+    messages_relation = @conversation.messages.reorder(id: :desc)
 
-    render json: ConversationSerializer.new(@conversation, messages: messages).as_json
+    # Use the ResponseWrapper to paginate messages.
+    # The list of messages will be in the :list key of the ResponseWrapper output.
+    pagination_response = paginate(
+      messages_relation,
+      resource: MessageSerializer,
+      paginate_params: params
+    )
+
+    # Reconstruct the conversation data with the paginated messages
+    # We pass the paginated list to the serializer to maintain consistency
+    conversation_data = ConversationSerializer.new(
+      @conversation,
+      messages: pagination_response[:json][:list]
+    ).as_json
+
+    # Render final response with pagination metadata merged into the conversation hash or at root
+    render json: conversation_data.merge(
+      next_cursor: pagination_response[:json][:next_cursor],
+      limit: pagination_response[:json][:limit]
+    ), status: pagination_response[:status]
   end
 
-def index
-  conversations = @user.conversations.includes(:messages)
+  def index
+    conversations = @user.conversations.includes(:latest_message)
 
-  render json: conversations.map { |c|
-{
-  id: c.id,
-  last_message: c.messages.order(created_at: :desc).first&.content
-}}
-end
+    data = conversations.map { |c|
+      {
+        id: c.id,
+        last_message: c.latest_message&.content
+      }
+    }
+    # For simplicity, returning the mapped list. Cursor pagination on arrays
+    # needs specific handling in ResponseWrapper if desired.
+    render json: { list: data }
+  end
 end
 
 private
