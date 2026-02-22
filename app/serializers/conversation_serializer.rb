@@ -25,7 +25,7 @@ class ConversationSerializer
 
   def serialized_messages
     @messages.map do |m|
-      MessageSerializer.new(m).as_json
+      m.is_a?(Hash) ? m : MessageSerializer.new(m).as_json
     end
   end
 end
