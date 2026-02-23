@@ -6,6 +6,8 @@ Rails.application.routes.draw do
   # root "posts#index"
   namespace :api do
     namespace :v1 do
+      post '/register', to: 'auth#register'
+      post '/login', to: 'auth#login'
       resources :conversations, only: [ :create, :show, :index ]
       resources :messages, only: [ :create ]
     end
