@@ -1,6 +1,7 @@
 FactoryBot.define do
   factory :user do
-    email {"user#{rand(1000)}@example.com"}
-    password {"Password1$"}
+    name { Faker::Name.name }
+    email { Faker::Internet.unique.email }
+    password { "Password1$" }
   end
 end
