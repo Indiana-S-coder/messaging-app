@@ -1,88 +1,51 @@
 module ResponseWrapper
-  extend ActiveSupport::Concern
+  module_function
 
   def paginate(data, paginate_params:, resource: nil, status: :ok, resource_params: {}, extra_data: {})
-    limit = paginate_params[:limit]&.to_i || 10
-    before_id = paginate_params[:before_id]
+    permitted_params = if paginate_params.respond_to?(:permit)
+                         paginate_params.permit(:limit, :before_time, :before_id)
+                       else
+                         paginate_params.slice(:limit, :before_time, :before_id)
+                       end
+
+    limit = permitted_params[:limit]&.to_i || 10
+    before_time = permitted_params[:before_time]
+    before_id = permitted_params[:before_id]
 
     records = data
-    records = records.where('id < ?', before_id) if before_id.present?
-    records = records.limit(limit)
+    if before_time.present? && before_id.present?
+      records = records.where('created_at < ? OR (created_at = ? AND id < ?)', before_time, before_time, before_id)
+    elsif before_time.present?
+      records = records.where('created_at < ?', before_time)
+    end
 
-    # Convert to array to handle serialization and next cursor calculation
-    records_array = records.to_a
+    records_array = records.limit(limit).to_a
 
-    list = if records_array.present?
-             if resource.nil?
-               records_array
-             else
-               records_array.map do |record|
-                 serializer = if resource_params.present?
-                                resource.new(record, params: resource_params)
-                              else
-                                resource.new(record)
-                              end
-
-                 serializer.respond_to?(:serializable_hash) ? serializer.serializable_hash : serializer.as_json
-               end
-             end
-           else
-             []
-           end
-
-    next_cursor = records_array.last&.id
+    list = serialize_collection(records_array, resource, resource_params)
+    last_record = records_array.last
 
     {
       json: {
         list: list,
-        next_cursor: next_cursor,
+        next_cursor: {
+          before_time: last_record&.created_at,
+          before_id: last_record&.id
+        },
         limit: limit
       }.merge(extra_data),
       status: status
     }
   end
 
-  module ClassMethods
-    def paginate(data, paginate_params:, resource: nil, status: :ok, resource_params: {}, extra_data: {})
-      # For class level access, we need a way to call the instance method
-      # or just implement it here. Let's just implement it here for simplicity.
-      limit = paginate_params[:limit]&.to_i || 10
-      before_id = paginate_params[:before_id]
+  private
 
-      records = data
-      records = records.where('id < ?', before_id) if before_id.present?
-      records = records.limit(limit)
+  def serialize_collection(collection, resource, resource_params)
+    return [] if collection.blank?
+    return collection if resource.nil?
 
-      records_array = records.to_a
-
-      list = if records_array.present?
-               if resource.nil?
-                 records_array
-               else
-                 records_array.map do |record|
-                   serializer = if resource_params.present?
-                                  resource.new(record, params: resource_params)
-                                else
-                                  resource.new(record)
-                                end
-
-                   serializer.respond_to?(:serializable_hash) ? serializer.serializable_hash : serializer.as_json
-                 end
-               end
-             else
-               []
-             end
-
-      next_cursor = records_array.last&.id
-
-      {
-        json: {
-          list: list,
-          next_cursor: next_cursor,
-          limit: limit
-        }.merge(extra_data),
-        status: status
-      }
+    collection.map do |record|
+      serializer = resource_params.present? ? resource.new(record, params: resource_params) : resource.new(record)
+      serializer.respond_to?(:serializable_hash) ? serializer.serializable_hash : serializer.as_json
     end
   end
 end

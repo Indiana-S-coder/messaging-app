@@ -42,7 +42,7 @@ class Api::V1::ConversationsController < ApplicationController
 
     # Use the ResponseWrapper to paginate messages.
     # The list of messages will be in the :list key of the ResponseWrapper output.
-    pagination_response = paginate(
+    pagination_response = ResponseWrapper.paginate(
       messages_relation,
       resource: MessageSerializer,
       paginate_params: params
