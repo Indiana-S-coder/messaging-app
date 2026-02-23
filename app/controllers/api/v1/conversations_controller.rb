@@ -1,6 +1,7 @@
 class Api::V1::ConversationsController < ApplicationController
   before_action :set_conversation, only: [:show]
   before_action :set_user, only: [:show, :index]
+  before_action :set_policy, only: [:show]
 
   def create
     user_ids = params[:user_ids]
@@ -32,9 +33,7 @@ class Api::V1::ConversationsController < ApplicationController
   end
 
   def show
-    policy = ConversationPolicy.new(@user, @conversation)
-
-    unless policy.show?
+    unless @policy.show?
       return render json: { error: "User not part of this conversation" }, status: :forbidden
     end
 
@@ -86,4 +85,8 @@ end
 
 def set_user
   @user = User.find(params[:user_id])
+end
+
+def set_policy
+  @policy = ConversationPolicy.new(@user, @conversation)
 end

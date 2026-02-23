@@ -11,9 +11,9 @@ RSpec.describe Message, type: :model do
   end
 
   describe 'default scope' do
+    let!(:conversation) { create(:conversation) }
+    let!(:user) { create(:user) }
     it 'orders messages by created_at ascending' do
-      conversation = create(:conversation)
-      user = create(:user)
 
       older = create(:message, conversation: conversation, user: user, created_at: 2.days.ago)
       newer = create(:message, conversation: conversation, user: user, created_at: 1.day.ago)

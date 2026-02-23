@@ -7,8 +7,9 @@ RSpec.describe ConversationPolicy do
 
   describe '#show?' do
     context 'when user is part of the conversation' do
+      let(:participant) { create(:conversation_participant, conversation: conversation, user: user1) }
       before do
-        create(:conversation_participant, conversation: conversation, user: user1)
+        participant
       end
 
       it 'returns true' do
