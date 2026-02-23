@@ -1,5 +1,6 @@
 class Api::V1::ConversationsController < ApplicationController
   before_action :set_conversation, only: [:show]
+  before_action :set_policy, only: [:show]
 
   def create
     user_ids = Array.wrap(params[:user_ids])
@@ -82,4 +83,8 @@ private
 
 def set_conversation
   @conversation = Conversation.find(params[:id])
+end
+
+def set_policy
+  @policy = ConversationPolicy.new(@user, @conversation)
 end
