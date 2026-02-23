@@ -2,6 +2,6 @@ FactoryBot.define do
   factory :message do
     association :conversation
     association :user
-    content { "Test message"}
+    content { Faker::Lorem.sentence }
   end
 end
