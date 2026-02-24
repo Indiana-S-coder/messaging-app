@@ -21,10 +21,11 @@ RSpec.describe Api::V1::ConversationsController, type: :request do
           expect(response).to have_http_status(:ok)
 
           json = JSON.parse(response.body)
+          data = json["data"]
 
-          expect(json["list"].length).to eq(1)
-          expect(json["list"].first["id"]).to eq(conversation.id)
-          expect(json["list"].first["last_message"]).to eq("Last message")
+          expect(data["list"].length).to eq(1)
+          expect(data["list"].first["id"]).to eq(conversation.id)
+          expect(data["list"].first["last_message"]).to eq("Last message")
         end
       end
 
@@ -34,8 +35,9 @@ RSpec.describe Api::V1::ConversationsController, type: :request do
           get "/api/v1/conversations", params: {user_id: user1.id}
 
           json = JSON.parse(response.body)
+          data = json["data"]
 
-          expect(json["list"]).to eq([])
+          expect(data["list"]).to eq([])
         end
       end
     end
@@ -54,7 +56,8 @@ RSpec.describe Api::V1::ConversationsController, type: :request do
         get "/api/v1/conversations/#{conversation.id}", params: { user_id: user1.id }
         expect(response).to have_http_status(:ok)
         json = JSON.parse(response.body)
-        expect(json["messages"]).to be_present
+        data = json["data"]
+        expect(data["messages"]).to be_present
         expect(json["next_cursor"]).to be_present
         expect(json["limit"]).to be_present
       end
@@ -64,7 +67,8 @@ RSpec.describe Api::V1::ConversationsController, type: :request do
         get "/api/v1/conversations/#{conversation.id}", params: { user_id: stranger.id }
         expect(response).to have_http_status(:forbidden)
         json = JSON.parse(response.body)
-        expect(json["error"]).to eq("User not part of this conversation")
+        expect(json["error"]["code"]).to eq("FORBIDDEN")
+        expect(json["error"]["message"]).to eq("User not part of this conversation")
       end
     end
 
@@ -73,8 +77,9 @@ RSpec.describe Api::V1::ConversationsController, type: :request do
         post "/api/v1/conversations", params: {user_ids: [user1.id, user2.id]}
         expect(response).to have_http_status(:created)
         json = JSON.parse(response.body)
-        expect(json["id"]).to be_present
-        expect(json["participants"].length).to eq(2)
+        data = json["data"]
+        expect(data["id"]).to be_present
+        expect(data["participants"].length).to eq(2)
       end
 
       it 'returns existing conversation if already present' do
@@ -84,7 +89,8 @@ RSpec.describe Api::V1::ConversationsController, type: :request do
         post "/api/v1/conversations", params: {user_ids: [user1.id, user2.id]}
         expect(response).to have_http_status(:ok)
         json = JSON.parse(response.body)
-        expect(json["id"]).to eq(conversation.id)
+        data = json["data"]
+        expect(data["id"]).to eq(conversation.id)
       end
     end
 end

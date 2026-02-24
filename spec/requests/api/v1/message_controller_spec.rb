@@ -20,9 +20,10 @@ RSpec.describe Api::V1::MessagesController, type: :request do
       expect(response).to have_http_status(:created)
 
       json = JSON.parse(response.body)
+      data = json["data"]
 
-      expect(json["content"]).to eq("Hello World!")
-      expect(json["sender_id"]).to eq(user1.id)
+      expect(data["content"]).to eq("Hello World!")
+      expect(data["sender_id"]).to eq(user1.id)
       end
 
       it 'updates conversation updated_at timestamp' do
@@ -51,7 +52,8 @@ RSpec.describe Api::V1::MessagesController, type: :request do
 
        json = JSON.parse(response.body)
 
-       expect(json["error"]).to eq("User not part of this conversation")
+       expect(json["error"]["code"]).to eq("FORBIDDEN")
+       expect(json["error"]["message"]).to eq("User not part of this conversation")
       end
     end
   end
