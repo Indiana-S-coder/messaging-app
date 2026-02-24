@@ -3,6 +3,8 @@ require 'rails_helper'
 RSpec.describe Api::V1::ConversationsController, type: :request do
     let!(:user1) { create(:user) }
     let!(:user2) { create(:user) }
+    let(:token1) { JsonWebToken.encode(user_id: user1.id) }
+    let(:headers1) { { "Authorization" => "Bearer #{token1}" } }
 
     describe '#index' do
       context 'when conversations exist' do
@@ -16,7 +18,7 @@ RSpec.describe Api::V1::ConversationsController, type: :request do
         end
 
         it 'returns list conversations with last message' do
-          get "/api/v1/conversations", params: { user_id: user1.id}
+          get "/api/v1/conversations", headers: headers1
 
           expect(response).to have_http_status(:ok)
 
@@ -31,7 +33,7 @@ RSpec.describe Api::V1::ConversationsController, type: :request do
       context 'when no conversations exist' do
         it 'returns empty list when no conversations exist' do
 
-          get "/api/v1/conversations", params: {user_id: user1.id}
+          get "/api/v1/conversations", headers: headers1
 
           json = JSON.parse(response.body)
 
@@ -51,7 +53,7 @@ RSpec.describe Api::V1::ConversationsController, type: :request do
       end
 
       it 'returns conversation messages with metadata' do
-        get "/api/v1/conversations/#{conversation.id}", params: { user_id: user1.id }
+        get "/api/v1/conversations/#{conversation.id}", headers: headers1
         expect(response).to have_http_status(:ok)
         json = JSON.parse(response.body)
         expect(json["messages"]).to be_present
@@ -61,7 +63,8 @@ RSpec.describe Api::V1::ConversationsController, type: :request do
 
       it 'returns forbidden if user is not part of conversation' do
         stranger = create(:user)
-        get "/api/v1/conversations/#{conversation.id}", params: { user_id: stranger.id }
+        stranger_token = JsonWebToken.encode(user_id: stranger.id)
+        get "/api/v1/conversations/#{conversation.id}", headers: { "Authorization" => "Bearer #{stranger_token}" }
         expect(response).to have_http_status(:forbidden)
         json = JSON.parse(response.body)
         expect(json["error"]).to eq("User not part of this conversation")
@@ -70,7 +73,7 @@ RSpec.describe Api::V1::ConversationsController, type: :request do
 
     describe '#create' do
       it 'create a new conversation when none exists' do
-        post "/api/v1/conversations", params: {user_ids: [user1.id, user2.id]}
+        post "/api/v1/conversations", params: {user_ids: [user2.id]}, headers: headers1
         expect(response).to have_http_status(:created)
         json = JSON.parse(response.body)
         expect(json["id"]).to be_present
@@ -81,7 +84,7 @@ RSpec.describe Api::V1::ConversationsController, type: :request do
         conversation = create(:conversation)
         create(:conversation_participant, conversation: conversation, user: user1)
         create(:conversation_participant, conversation: conversation, user: user2)
-        post "/api/v1/conversations", params: {user_ids: [user1.id, user2.id]}
+        post "/api/v1/conversations", params: {user_ids: [user2.id]}, headers: headers1
         expect(response).to have_http_status(:ok)
         json = JSON.parse(response.body)
         expect(json["id"]).to eq(conversation.id)

@@ -4,6 +4,8 @@ RSpec.describe Api::V1::MessagesController, type: :request do
   let!(:user1) {create(:user)}
   let!(:user2) {create(:user)}
   let!(:conversation) {create(:conversation)}
+  let(:token) { JsonWebToken.encode(user_id: user1.id) }
+  let(:headers) { { "Authorization" => "Bearer #{token}" } }
 
   before do
     create(:conversation_participant, conversation: conversation, user: user1)
@@ -14,7 +16,9 @@ RSpec.describe Api::V1::MessagesController, type: :request do
     context 'when user is part of conversation' do
       it 'creates a message and returns 201' do
         expect {
-          post "/api/v1/messages", params: {conversation_id: conversation.id, user_id: user1.id, content: "Hello World!"}
+          post "/api/v1/messages",
+               params: { conversation_id: conversation.id, content: "Hello World!" },
+               headers: headers
       }.to change(Message, :count).by(1)
 
       expect(response).to have_http_status(:created)
@@ -31,7 +35,8 @@ RSpec.describe Api::V1::MessagesController, type: :request do
         sleep 1 # ensure timestamp difference
 
         post "/api/v1/messages",
-        params: {conversation_id: conversation.id, user_id: user1.id, content: "Hello World updated."}
+             params: { conversation_id: conversation.id, content: "Hello World updated." },
+             headers: headers
 
         conversation.reload
 
@@ -41,10 +46,14 @@ RSpec.describe Api::V1::MessagesController, type: :request do
 
     context 'when user is not part of conversation' do
       let!(:stranger) {create(:user)}
+      let(:stranger_token) { JsonWebToken.encode(user_id: stranger.id) }
+      let(:stranger_headers) { { "Authorization" => "Bearer #{stranger_token}" } }
 
       it 'returns 403 forbidden' do
         expect {
-          post "/api/v1/messages", params: {conversation_id: conversation.id, user_id: stranger.id, content: "not allowed"}
+          post "/api/v1/messages",
+               params: { conversation_id: conversation.id, content: "not allowed" },
+               headers: stranger_headers
        }.not_to change(Message, :count)
 
        expect(response).to have_http_status(:forbidden)
