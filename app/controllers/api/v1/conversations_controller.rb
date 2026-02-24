@@ -1,4 +1,6 @@
 class Api::V1::ConversationsController < ApplicationController
+  before_action :set_conversation, only: [:show]
+
   def create
     user_ids = Array.wrap(params[:user_ids])
     user_ids |= @current_user.id
@@ -67,6 +69,9 @@ class Api::V1::ConversationsController < ApplicationController
 
   private
 
+def set_conversation
+  @conversation = Conversation.find(params[:id])
+end
   def conversation_params
     params.permit(:user_id).merge(conversation_id: params[:id])
   end
