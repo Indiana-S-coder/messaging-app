@@ -1,0 +1,19 @@
+SUCCESS:
+  title: "Success"
+  message: "Operation completed successfully"
+  type: "success"
+
+RECORD_CREATE_SUCCESS:
+  title: "%{record} Created"
+  message: "%{record} has been created successfully."
+  type: "success"
+
+RECORD_UPDATED:
+  title: "%{record} Updated"
+  message: "%{record} has been updated successfully."
+  type: "success"
+
+RECORD_ARCHIVED:
+  title: "%{record} Archived"
+  message: "%{record} has been archived successfully."
+  type: "success"
