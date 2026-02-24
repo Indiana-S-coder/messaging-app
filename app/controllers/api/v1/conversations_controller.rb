@@ -1,9 +1,9 @@
 class Api::V1::ConversationsController < ApplicationController
   before_action :set_conversation, only: [:show]
-  before_action :set_user, only: [:show, :index]
 
   def create
-    user_ids = params[:user_ids]
+    user_ids = (params[:user_ids] || []).map(&:to_i)
+    user_ids << @current_user.id unless user_ids.include?(@current_user.id)
 
     if user_ids.length == 2
       existing_conversation = Conversation.joins(:conversation_participants).where(conversation_participants: { user_id: user_ids }).group("conversations.id").having("COUNT(conversation_participants.user_id) = 2").first
@@ -32,7 +32,7 @@ class Api::V1::ConversationsController < ApplicationController
   end
 
   def show
-    policy = ConversationPolicy.new(@user, @conversation)
+    policy = ConversationPolicy.new(@current_user, @conversation)
 
     unless policy.show?
       return render json: { error: "User not part of this conversation" }, status: :forbidden
@@ -64,7 +64,7 @@ class Api::V1::ConversationsController < ApplicationController
   end
 
   def index
-    conversations = @user.conversations.includes(:latest_message)
+    conversations = @current_user.conversations.includes(:latest_message)
 
     data = conversations.map { |c|
       {
@@ -82,8 +82,4 @@ private
 
 def set_conversation
   @conversation = Conversation.find(params[:id])
-end
-
-def set_user
-  @user = User.find(params[:user_id])
 end

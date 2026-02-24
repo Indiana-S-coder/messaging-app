@@ -1,10 +1,9 @@
 class Api::V1::MessagesController < ApplicationController
   before_action :set_conversation, only: [:create]
-  before_action :set_user, only: [:create]
   after_action :update_conversation_last_message
 
   def create
-    policy = ConversationPolicy.new(@user, @conversation)
+    policy = ConversationPolicy.new(@current_user, @conversation)
 
 
     unless policy.show?
@@ -13,7 +12,7 @@ class Api::V1::MessagesController < ApplicationController
 
     @message = @conversation.messages.create!(
       content: params[:content],
-      user: @user,
+      user: @current_user,
     )
 
     render json: MessageSerializer.new(@message).as_json, status: :created
@@ -31,7 +30,4 @@ class Api::V1::MessagesController < ApplicationController
     @conversation = Conversation.find(params[:conversation_id])
   end
 
-  def set_user
-    @user = User.find(params[:user_id])
-  end
 end
