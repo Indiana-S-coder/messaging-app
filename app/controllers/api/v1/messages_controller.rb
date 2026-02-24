@@ -7,7 +7,7 @@ class Api::V1::MessagesController < ApplicationController
 
 
     unless policy.show?
-      return render json: { error: "User not part of this conversation" }, status: :forbidden
+      return render ResponseWrapper.parse("FORBIDDEN", status: :forbidden, message: "User not part of this conversation")
     end
 
     @message = @conversation.messages.create!(
@@ -15,7 +15,7 @@ class Api::V1::MessagesController < ApplicationController
       user: @current_user,
     )
 
-    render json: MessageSerializer.new(@message).as_json, status: :created
+    render ResponseWrapper.parse(MessageSerializer.new(@message).as_json, status: :created)
   end
 
   private

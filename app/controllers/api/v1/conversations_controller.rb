@@ -10,7 +10,7 @@ class Api::V1::ConversationsController < ApplicationController
       existing_conversation = Conversation.joins(:conversation_participants).where(conversation_participants: { user_id: user_ids }).group("conversations.id").having("COUNT(conversation_participants.user_id) = 2").first
 
       if existing_conversation
-        return render json: existing_conversation, status: :ok
+        return render ResponseWrapper.parse(existing_conversation, status: :ok)
       end
     end
 
@@ -24,26 +24,25 @@ class Api::V1::ConversationsController < ApplicationController
       )
     end
 
-    render json: {
+    render ResponseWrapper.parse({
       id: conversation.id,
       participants: conversation.users.map { |u|
         { id: u.id, email: u.email }
       }
-    }, status: :created
+    }, status: :created)
   end
 
   def show
     policy = ConversationPolicy.new(@current_user, @conversation)
 
-    unless policy.show?
-      return render json: { error: "User not part of this conversation" }, status: :forbidden
+    unless @policy.show?
+      return render ResponseWrapper.parse("FORBIDDEN", status: :forbidden, message: "User not part of this conversation")
     end
 
     # Cursor pagination: Fetch messages descending by ID (most recent first)
     messages_relation = @conversation.messages.reorder(id: :desc)
 
     # Use the ResponseWrapper to paginate messages.
-    # The list of messages will be in the :list key of the ResponseWrapper output.
     pagination_response = ResponseWrapper.paginate(
       messages_relation,
       resource: MessageSerializer,
@@ -51,17 +50,16 @@ class Api::V1::ConversationsController < ApplicationController
     )
 
     # Reconstruct the conversation data with the paginated messages
-    # We pass the paginated list to the serializer to maintain consistency
     conversation_data = ConversationSerializer.new(
       @conversation,
-      messages: pagination_response[:json][:list]
+      messages: pagination_response[:json][:data][:list]
     ).as_json
 
-    # Render final response with pagination metadata merged into the conversation hash or at root
-    render json: conversation_data.merge(
+    # Render final response merging conversation data into the standardized structure
+    render ResponseWrapper.parse(conversation_data, status: pagination_response[:status], extra_data: {
       next_cursor: pagination_response[:json][:next_cursor],
       limit: pagination_response[:json][:limit]
-    ), status: pagination_response[:status]
+    })
   end
 
   def index
@@ -73,18 +71,17 @@ class Api::V1::ConversationsController < ApplicationController
         last_message: c.latest_message&.content
       }
     }
-    # For simplicity, returning the mapped list. Cursor pagination on arrays
-    # needs specific handling in ResponseWrapper if desired.
-    render json: { list: data }
-  end
-end
 
-private
+    render ResponseWrapper.parse({ list: data }, status: :ok)
+  end
+
+  private
 
 def set_conversation
   @conversation = Conversation.find(params[:id])
 end
 
-def set_policy
-  @policy = ConversationPolicy.new(@user, @conversation)
+  def set_policy
+    @policy = ConversationPolicy.new(@user, @conversation)
+  end
 end
