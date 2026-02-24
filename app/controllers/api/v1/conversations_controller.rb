@@ -1,8 +1,4 @@
 class Api::V1::ConversationsController < ApplicationController
-  before_action :set_conversation, only: [:show]
-  before_action :set_user, only: [:show, :index]
-  before_action :set_policy, only: [:show]
-
   def create
     user_ids = params[:user_ids]
 
@@ -33,12 +29,20 @@ class Api::V1::ConversationsController < ApplicationController
   end
 
   def show
-    unless @policy.show?
-      return render ResponseWrapper.parse("FORBIDDEN", status: :forbidden, message: "User not part of this conversation")
+    form = Api::V1::ConversationShowForm.new(conversation_params)
+
+    unless form.valid?
+      return render ResponseWrapper.parse(
+        form.errors.full_messages.to_sentence,
+        status: form.error_status,
+        message: form.errors.full_messages.to_sentence
+      )
     end
 
+    conversation = form.conversation
+
     # Cursor pagination: Fetch messages descending by ID (most recent first)
-    messages_relation = @conversation.messages.reorder(id: :desc)
+    messages_relation = conversation.messages.reorder(id: :desc)
 
     # Use the ResponseWrapper to paginate messages.
     pagination_response = ResponseWrapper.paginate(
@@ -49,7 +53,7 @@ class Api::V1::ConversationsController < ApplicationController
 
     # Reconstruct the conversation data with the paginated messages
     conversation_data = ConversationSerializer.new(
-      @conversation,
+      conversation,
       messages: pagination_response[:json][:data][:list]
     ).as_json
 
@@ -61,7 +65,8 @@ class Api::V1::ConversationsController < ApplicationController
   end
 
   def index
-    conversations = @user.conversations.includes(:latest_message)
+    user = User.find(params[:user_id])
+    conversations = user.conversations.includes(:latest_message)
 
     data = conversations.map { |c|
       {
@@ -75,15 +80,7 @@ class Api::V1::ConversationsController < ApplicationController
 
   private
 
-  def set_conversation
-    @conversation = Conversation.find(params[:id])
-  end
-
-  def set_user
-    @user = User.find(params[:user_id])
-  end
-
-  def set_policy
-    @policy = ConversationPolicy.new(@user, @conversation)
+  def conversation_params
+    params.permit(:user_id).merge(conversation_id: params[:id])
   end
 end
