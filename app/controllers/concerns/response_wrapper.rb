@@ -1,6 +1,24 @@
 module ResponseWrapper
   module_function
 
+  def parse(data_or_code, status: :ok, message: nil, extra_data: {})
+    response_body = if status_success?(status)
+                      { data: data_or_code }
+                    else
+                      {
+                        error: {
+                          code: data_or_code,
+                          message: message
+                        }
+                      }
+                    end
+
+    {
+      json: response_body.merge(extra_data),
+      status: status
+    }
+  end
+
   def paginate(data, paginate_params:, resource: nil, status: :ok, resource_params: {}, extra_data: {})
     permitted_params = if paginate_params.respond_to?(:permit)
                          paginate_params.permit(:limit, :before_time, :before_id)
@@ -24,20 +42,27 @@ module ResponseWrapper
     list = serialize_collection(records_array, resource, resource_params)
     last_record = records_array.last
 
-    {
-      json: {
-        list: list,
-        next_cursor: {
-          before_time: last_record&.created_at,
-          before_id: last_record&.id
-        },
-        limit: limit
-      }.merge(extra_data),
-      status: status
+    pagination_meta = {
+      next_cursor: {
+        before_time: last_record&.created_at,
+        before_id: last_record&.id
+      },
+      limit: limit
     }
+
+    parse({ list: list }, status: status, extra_data: pagination_meta.merge(extra_data))
   end
 
-  private
+  def status_success?(status)
+    case status
+    when Symbol
+      ![:bad_request, :unauthorized, :forbidden, :not_found, :method_not_allowed, :not_acceptable, :conflict, :unprocessable_entity, :internal_server_error].include?(status)
+    when Integer
+      status < 400
+    else
+      true
+    end
+  end
 
   def serialize_collection(collection, resource, resource_params)
     return [] if collection.blank?
