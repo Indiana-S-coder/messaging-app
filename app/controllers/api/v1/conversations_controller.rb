@@ -6,12 +6,11 @@ class Api::V1::ConversationsController < ApplicationController
       existing_conversation = Conversation.joins(:conversation_participants).where(conversation_participants: { user_id: user_ids }).group("conversations.id").having("COUNT(conversation_participants.user_id) = 2").first
 
       if existing_conversation
-        return render ResponseWrapper.parse(existing_conversation, status: :ok)
+        return render ResponseWrapper.parse(data: existing_conversation, resource: Api::V1::ConversationResource, resource_params: { include_participants: true })
       end
     end
 
     conversation = Conversation.create!
-
 
     user_ids.each do |user_id|
       ConversationParticipant.create!(
@@ -20,12 +19,7 @@ class Api::V1::ConversationsController < ApplicationController
       )
     end
 
-    render ResponseWrapper.parse({
-      id: conversation.id,
-      participants: conversation.users.map { |u|
-        { id: u.id, email: u.email }
-      }
-    }, status: :created)
+    render ResponseWrapper.parse('RECORD_CREATE_SUCCESS', status: :created, data: conversation, resource: Api::V1::ConversationResource, resource_params: { include_participants: true }, record: 'Conversation')
   end
 
   def show
@@ -47,35 +41,28 @@ class Api::V1::ConversationsController < ApplicationController
     # Use the ResponseWrapper to paginate messages.
     pagination_response = ResponseWrapper.paginate(
       messages_relation,
-      resource: MessageSerializer,
-      paginate_params: params
+      resource: Api::V1::MessageResource,
+      pagination_params:
     )
 
-    # Reconstruct the conversation data with the paginated messages
-    conversation_data = ConversationSerializer.new(
-      conversation,
-      messages: pagination_response[:json][:data][:list]
-    ).as_json
-
-    # Render final response merging conversation data into the standardized structure
-    render ResponseWrapper.parse(conversation_data, status: pagination_response[:status], extra_data: {
-      next_cursor: pagination_response[:json][:next_cursor],
-      limit: pagination_response[:json][:limit]
-    })
+    # Wrap the conversation data and include paginated messages
+    render ResponseWrapper.parse(
+      data: conversation,
+      resource: Api::V1::ConversationResource,
+      resource_params: { include_participants: true },
+      extra_data: { messages: pagination_response[:json] }
+    )
   end
 
   def index
     user = User.find(params[:user_id])
     conversations = user.conversations.includes(:latest_message)
 
-    data = conversations.map { |c|
-      {
-        id: c.id,
-        last_message: c.latest_message&.content
-      }
-    }
-
-    render ResponseWrapper.parse({ list: data }, status: :ok)
+    render ResponseWrapper.paginate(
+      conversations,
+      resource: Api::V1::ConversationResource,
+      pagination_params:
+    )
   end
 
   private
