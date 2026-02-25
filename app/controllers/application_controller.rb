@@ -31,7 +31,8 @@ class ApplicationController < ActionController::API
     decoded = JsonWebToken.decode(token)
 
     @current_user = User.find(decoded[:user_id]) if decoded
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: 'Unauthorized' }, status: :unauthorized
+  #  TODO: handle in error handling
+  # rescue ActiveRecord::RecordNotFound
+  #   render json: { error: 'Unauthorized' }, status: :unauthorized
   end
 end

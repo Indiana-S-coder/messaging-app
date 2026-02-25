@@ -6,11 +6,12 @@ module Api
       def register
         form = RegisterForm.new(user_params)
 
-        if form.save
-          token = JsonWebToken.encode(user_id: form.user.id)
+        if (user = form.save)
+          token = JsonWebToken.encode(user_id: user.id)
+          
           render json: {
             token: token,
-            user: { id: form.user.id, email: form.user.email }
+            user: { id: user.id, email: user.email }
           }, status: :created
         else
           render json: { errors: form.errors.full_messages }, status: :unprocessable_entity

@@ -13,21 +13,17 @@ class RegisterForm
   def save
     return false unless valid?
 
-    @user = User.new(
+    user = User.create!(
       email: email,
       password: password,
       password_confirmation: password_confirmation
     )
 
-    if @user.save
-      true
+    if user.persisted?
+      user
     else
-      errors.merge!(@user.errors)
+      errors.merge!(user.errors)
       false
     end
-  end
-
-  def user
-    @user
   end
 end
