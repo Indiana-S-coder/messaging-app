@@ -4,16 +4,16 @@ module Api
       skip_before_action :authorize_request, only: [:login, :register]
 
       def register
-        user = User.new(user_params)
+        form = RegisterForm.new(user_params)
 
-        if user.save
-          token = JsonWebToken.encode(user_id: user.id)
+        if form.save
+          token = JsonWebToken.encode(user_id: form.user.id)
           render json: {
             token: token,
-            user: { id: user.id, email: user.email }
+            user: { id: form.user.id, email: form.user.email }
           }, status: :created
         else
-          render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: form.errors.full_messages }, status: :unprocessable_entity
         end
       end
 
