@@ -1,4 +1,5 @@
 class ApplicationController < ActionController::API
+
   include ResponseWrapper
 
   before_action :authorize_request
@@ -35,4 +36,5 @@ class ApplicationController < ActionController::API
   # rescue ActiveRecord::RecordNotFound
   #   render json: { error: 'Unauthorized' }, status: :unauthorized
   end
+
 end
