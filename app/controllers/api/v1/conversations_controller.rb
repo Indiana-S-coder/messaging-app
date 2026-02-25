@@ -2,8 +2,8 @@ class Api::V1::ConversationsController < ApplicationController
   before_action :set_conversation, only: [:show]
 
   def create
-    user_ids = (params[:user_ids] || []).map(&:to_i)
-    user_ids << @current_user.id unless user_ids.include?(@current_user.id)
+    user_ids = Array.wrap(params[:user_ids])
+    user_ids |= @current_user.id
 
     if user_ids.length == 2
       existing_conversation = Conversation.joins(:conversation_participants).where(conversation_participants: { user_id: user_ids }).group("conversations.id").having("COUNT(conversation_participants.user_id) = 2").first
