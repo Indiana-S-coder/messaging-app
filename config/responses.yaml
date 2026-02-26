@@ -32,3 +32,8 @@ RECORD_INVALID:
   title: "Invalid Record"
   message: "The record could not be saved due to validation errors."
   type: "error"
+
+UNAUTHORIZED:
+  title: "Unauthorized"
+  message: "You are not authorized to perform this action."
+  type: "error"

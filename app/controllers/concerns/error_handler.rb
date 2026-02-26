@@ -8,7 +8,11 @@ module ErrorHandler
     end
 
     rescue_from ActiveRecord::RecordNotFound do |e|
-      render ResponseWrapper.parse("RECORD_NOT_FOUND", status: :not_found, message: e.message)
+      if e.model == "User"
+        render ResponseWrapper.parse("UNAUTHORIZED", status: :unauthorized, message: "Invalid or expired token.")
+      else
+        render ResponseWrapper.parse("RECORD_NOT_FOUND", status: :not_found, message: e.message)
+      end
     end
 
     rescue_from ActiveRecord::RecordInvalid do |e|
