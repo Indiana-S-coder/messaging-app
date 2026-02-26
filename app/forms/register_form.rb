@@ -5,7 +5,7 @@ class RegisterForm
 
   attr_accessor :email, :password, :password_confirmation
 
-  validates :email, presence: true
+  validates :email, presence: true, uniqueness: { case_sensitive: false }
   validates :password, presence: true
   validates :password_confirmation, presence: true
   validates :password, confirmation: true
