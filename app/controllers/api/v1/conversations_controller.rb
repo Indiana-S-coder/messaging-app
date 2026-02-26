@@ -13,22 +13,10 @@ class Api::V1::ConversationsController < ApplicationController
     conversation = Conversation.find(params[:id])
     authorize conversation
 
-    # Cursor pagination: Fetch messages descending by ID (most recent first)
-    messages_relation = conversation.messages.reorder(id: :desc)
-
-    # Use the ResponseWrapper to paginate messages.
-    pagination_response = ResponseWrapper.paginate(
-      messages_relation,
-      resource: Api::V1::MessageResource,
-      pagination_params:
-    )
-
-    # Wrap the conversation data and include paginated messages
     render ResponseWrapper.parse(
       data: conversation,
       resource: Api::V1::ConversationResource,
-      resource_params: { include_participants: true },
-      extra_data: { messages: pagination_response[:json] }
+      resource_params: { include_participants: true, include_messages: true }
     )
   end
 
