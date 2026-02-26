@@ -5,7 +5,6 @@ class Api::V1::MessagesController < ApplicationController
   def create
     policy = ConversationPolicy.new(@current_user, @conversation)
 
-
     unless policy.show?
       return render ResponseWrapper.parse("FORBIDDEN", status: :forbidden, message: "User not part of this conversation")
     end
@@ -29,5 +28,4 @@ class Api::V1::MessagesController < ApplicationController
   def set_conversation
     @conversation = Conversation.find(params[:conversation_id])
   end
-
 end

@@ -5,25 +5,28 @@ class RegisterForm
 
   attr_accessor :email, :password, :password_confirmation
 
-  validates :email, presence: true, uniqueness: { case_sensitive: false }
+  validates :email, presence: true
+  validate :email_uniqueness
   validates :password, presence: true
   validates :password_confirmation, presence: true
   validates :password, confirmation: true
 
   def save
-    return false unless valid?
+    raise ActiveRecord::RecordInvalid.new(self) unless valid?
 
-    user = User.create!(
+    User.create!(
       email: email,
       password: password,
       password_confirmation: password_confirmation
     )
+  end
 
-    if user.persisted?
-      user
-    else
-      errors.merge!(user.errors)
-      false
-    end
+  private
+
+  def email_uniqueness
+    return unless User.exists?(email: email)
+
+    errors.add(:email, 'has already been taken')
+    raise ActiveRecord::RecordInvalid.new(self)
   end
 end

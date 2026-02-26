@@ -5,22 +5,18 @@ module Api
 
       def register
         form = RegisterForm.new(user_params)
+        user = form.save
+        token = JsonWebToken.encode(user_id: user.id)
 
-        if (user = form.save)
-          token = JsonWebToken.encode(user_id: user.id)
-
-          render ResponseWrapper.parse(
-            "RECORD_CREATE_SUCCESS",
-            status: :created,
-            data: {
-              token: token,
-              user: { id: user.id, email: user.email }
-            },
-            record: "User"
-          )
-        else
-          render ResponseWrapper.parse("RECORD_INVALID", status: :unprocessable_entity, message: form.errors.full_messages)
-        end
+        render ResponseWrapper.parse(
+          "RECORD_CREATE_SUCCESS",
+          status: :created,
+          data: {
+            token: token,
+            user: { id: user.id, email: user.email }
+          },
+          record: "User"
+        )
       end
 
       def login
