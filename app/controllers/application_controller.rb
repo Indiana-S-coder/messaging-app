@@ -26,4 +26,13 @@ class ApplicationController < ActionController::API
     render ResponseWrapper.parse("UNAUTHORIZED", status: :unauthorized) unless @current_user
   end
 
+  def authorize(record, query = nil)
+    query ||= "#{action_name}?"
+    policy_class = "#{record.class}Policy".constantize
+    policy = policy_class.new(@current_user, record)
+
+    unless policy.public_send(query)
+      render ResponseWrapper.parse("FORBIDDEN", status: :forbidden)
+    end
+  end
 end

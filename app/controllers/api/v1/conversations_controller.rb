@@ -1,4 +1,8 @@
 class Api::V1::ConversationsController < ApplicationController
+  before_action only: :show do
+    authorize conversation
+  end
+
   def index
     conversations = @current_user.conversations.includes(:latest_message)
 
@@ -10,9 +14,6 @@ class Api::V1::ConversationsController < ApplicationController
   end
 
   def show
-    conversation = Conversation.find(params[:id])
-    authorize conversation
-
     render ResponseWrapper.parse(
       data: conversation,
       resource: Api::V1::ConversationResource,
@@ -28,5 +29,11 @@ class Api::V1::ConversationsController < ApplicationController
     form.save
 
     render ResponseWrapper.parse('RECORD_CREATE_SUCCESS', status: :created, data: form.conversation, resource: Api::V1::ConversationResource, resource_params: { include_participants: true }, record: 'Conversation')
+  end
+
+  private
+
+  def conversation
+    @conversation ||= Conversation.find(params[:id])
   end
 end
