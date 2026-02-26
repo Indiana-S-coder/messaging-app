@@ -16,8 +16,8 @@ RSpec.describe "Api::V1::AuthController", type: :request do
 
         json = JSON.parse(response.body)
 
-        expect(json["token"]).to be_present
-        expect(json["user"]["email"]).to eq("test@example.com")
+        expect(json["data"]["token"]).to be_present
+        expect(json["data"]["user"]["email"]).to eq("test@example.com")
       end
     end
 
@@ -48,8 +48,8 @@ RSpec.describe "Api::V1::AuthController", type: :request do
 
         json = JSON.parse(response.body)
 
-        expect(json["token"]).to be_present
-        expect(json["user"]["email"]).to eq(user.email)
+        expect(json["data"]["token"]).to be_present
+        expect(json["data"]["user"]["email"]).to eq(user.email)
       end
     end
 
@@ -64,7 +64,7 @@ RSpec.describe "Api::V1::AuthController", type: :request do
 
         json = JSON.parse(response.body)
 
-        expect(json["error"]).to eq("Invalid credentials")
+        expect(json["title"]).to eq("Authentication Failed")
       end
     end
 

@@ -8,13 +8,18 @@ module Api
 
         if (user = form.save)
           token = JsonWebToken.encode(user_id: user.id)
-          
-          render json: {
-            token: token,
-            user: { id: user.id, email: user.email }
-          }, status: :created
+
+          render ResponseWrapper.parse(
+            "RECORD_CREATE_SUCCESS",
+            status: :created,
+            data: {
+              token: token,
+              user: { id: user.id, email: user.email }
+            },
+            record: "User"
+          )
         else
-          render json: { errors: form.errors.full_messages }, status: :unprocessable_entity
+          render ResponseWrapper.parse("RECORD_INVALID", status: :unprocessable_entity, message: form.errors.full_messages)
         end
       end
 
@@ -23,12 +28,15 @@ module Api
 
         if user&.authenticate(params[:password])
           token = JsonWebToken.encode(user_id: user.id)
-          render json: { token: token, user: {
-            id: user.id,
-            email: user.email
-          } }
+          render ResponseWrapper.parse(
+            "LOGIN_SUCCESS",
+            data: {
+              token: token,
+              user: { id: user.id, email: user.email }
+            }
+          )
         else
-          render json: { error: 'Invalid credentials' }, status: :unauthorized
+          render ResponseWrapper.parse("AUTH_FAILURE", status: :unauthorized)
         end
       end
 

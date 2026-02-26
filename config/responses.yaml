@@ -17,3 +17,18 @@ RECORD_ARCHIVED:
   title: "%{record} Archived"
   message: "%{record} has been archived successfully."
   type: "success"
+
+LOGIN_SUCCESS:
+  title: "Login Successful"
+  message: "You have been logged in successfully."
+  type: "success"
+
+AUTH_FAILURE:
+  title: "Authentication Failed"
+  message: "Invalid email or password."
+  type: "error"
+
+RECORD_INVALID:
+  title: "Invalid Record"
+  message: "The record could not be saved due to validation errors."
+  type: "error"
