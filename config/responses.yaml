@@ -17,3 +17,34 @@ RECORD_ARCHIVED:
   title: "%{record} Archived"
   message: "%{record} has been archived successfully."
   type: "success"
+
+LOGIN_SUCCESS:
+  title: "Login Successful"
+  message: "You have been logged in successfully."
+  type: "success"
+
+AUTH_FAILURE:
+  title: "Authentication Failed"
+  message: "Invalid email or password."
+  type: "error"
+
+RECORD_INVALID:
+  title: "Invalid Record"
+  message: "The record could not be saved due to validation errors."
+  type: "error"
+
+UNAUTHORIZED:
+  title: "Unauthorized"
+  message: "You are not authorized to perform this action."
+  type: "error"
+
+FORBIDDEN:
+  title: "Forbidden"
+  message: "You do not have permission to access this resource."
+  type: "error"
+  code: "FORBIDDEN"
+
+INTERNAL_ERROR:
+  title: "Internal Server Error"
+  message: "Something went wrong on our end. Please try again later."
+  type: "error"

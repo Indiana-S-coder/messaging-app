@@ -49,9 +49,11 @@ group :development, :test do
   gem "shoulda-matchers"
 
   gem "faker"
+
 end
-gem "devise"
-gem "devise-jwt"
+
+gem "jwt"
+gem "bcrypt"
 
 group :test do
   gem "rspec-rails"

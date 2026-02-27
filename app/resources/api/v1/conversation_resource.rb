@@ -8,11 +8,20 @@ class Api::V1::ConversationResource
     {
       id: @conversation.id,
       last_message: @conversation.latest_message&.content,
-      participants: participants
+      participants: participants,
+      messages: messages
     }.compact
   end
 
   private
+
+  def messages
+    return unless @params[:include_messages]
+
+    @conversation.messages.reorder(id: :desc).limit(20).map do |m|
+      Api::V1::MessageResource.new(m).serializable_hash
+    end
+  end
 
   def participants
     return unless @conversation.users.loaded? || @params[:include_participants]

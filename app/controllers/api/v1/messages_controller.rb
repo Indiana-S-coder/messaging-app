@@ -1,22 +1,26 @@
 class Api::V1::MessagesController < ApplicationController
-  before_action :set_conversation, only: [:create]
-  before_action :set_user, only: [:create]
-  after_action :update_conversation_last_message
+  before_action only: :create do
+    authorize conversation
+  end
+
+  after_action :update_conversation_last_message, only: :create
 
   def create
-    policy = ConversationPolicy.new(@user, @conversation)
-
-
-    unless policy.show?
-      return render ResponseWrapper.parse("FORBIDDEN", status: :forbidden, message: "User not part of this conversation")
-    end
-
-    @message = @conversation.messages.create!(
+    form = Api::V1::MessageCreateForm.new(
       content: params[:content],
-      user: @user,
+      conversation: conversation,
+      current_user: @current_user
     )
 
-    render ResponseWrapper.parse(MessageSerializer.new(@message).as_json, status: :created)
+    return render form.errors_response unless form.valid?
+
+    @message = form.save
+
+    render ResponseWrapper.parse(
+      data: @message,
+      status: :created,
+      resource: Api::V1::MessageResource
+    )
   end
 
   private
@@ -24,14 +28,10 @@ class Api::V1::MessagesController < ApplicationController
   def update_conversation_last_message
     return unless @message
 
-    @conversation.touch
+    conversation.touch
   end
 
-  def set_conversation
-    @conversation = Conversation.find(params[:conversation_id])
-  end
-
-  def set_user
-    @user = User.find(params[:user_id])
+  def conversation
+    @conversation ||= Conversation.find(params[:conversation_id])
   end
 end

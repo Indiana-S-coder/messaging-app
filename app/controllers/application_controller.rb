@@ -1,4 +1,11 @@
 class ApplicationController < ActionController::API
+
+  include ResponseWrapper
+  include ErrorHandler
+
+  before_action :authorize_request
+
+
   private
 
   def pagination_params
@@ -6,5 +13,26 @@ class ApplicationController < ActionController::API
       limit: params[:limit],
       cursor: params[:cursor].is_a?(Hash) || params[:cursor].is_a?(ActionController::Parameters) ? params.require(:cursor).permit(:before_time, :before_id) : nil
     }
+  end
+
+  def authorize_request
+    header = request.headers['Authorization']
+    token = header.split(' ').last if header
+
+    decoded = JsonWebToken.decode(token)
+
+    @current_user = User.find(decoded[:user_id]) if decoded
+
+    render ResponseWrapper.parse("UNAUTHORIZED", status: :unauthorized) unless @current_user
+  end
+
+  def authorize(record, query = nil)
+    query ||= "#{action_name}?"
+    policy_class = "#{record.class}Policy".constantize
+    policy = policy_class.new(@current_user, record)
+
+    unless policy.public_send(query)
+      render ResponseWrapper.parse("FORBIDDEN", status: :forbidden, message: "User not part of this conversation")
+    end
   end
 end

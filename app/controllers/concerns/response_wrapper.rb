@@ -25,6 +25,7 @@ module ResponseWrapper
           message: message.presence || (response["message"] % args),
           helper: response["helper"] ? (response["helper"] % args) : nil,
           type: response["type"],
+          code: response["code"],
           data: data
         }.compact_blank.as_json,
         status: status

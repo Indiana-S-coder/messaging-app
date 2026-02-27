@@ -1,8 +1,239 @@
-# Omakase Ruby styling for Rails
-inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+require:
+  - rubocop-rails
 
-# Overwrite or add rules to create your own house style
-#
-# # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
-# Layout/SpaceInsideArrayLiteralBrackets:
-#   Enabled: false
+AllCops:
+  NewCops: enable
+  Exclude:
+    - ".git/**/*"
+    - ".semaphore/**/*"
+    - "docs/**/*"
+    - "deploy/**/*"
+    - "public/**/*"
+    - "scripts/**/*"
+    - "bin/**/*"
+    - "**/*.slim"
+    - "**/*.haml"
+    - "**/*.erb"
+    - "storage/**/*"
+    - "shared/**/*"
+    - "vendor/bundle/**/*"
+
+Bundler/GemComment:
+  Enabled: false
+
+Rails:
+  Enabled: true
+
+Bundler/OrderedGems:
+  Enabled: false
+
+Layout/IndentationConsistency:
+  EnforcedStyle: normal # or 'rails'
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+Layout/ArrayAlignment:
+  Enabled: true
+
+Layout/FirstHashElementIndentation:
+  Enabled: true
+
+Layout/FirstArrayElementIndentation:
+  Enabled: true
+
+Layout/FirstArgumentIndentation:
+  Enabled: true
+
+Layout/ArgumentAlignment:
+  Enabled: true
+
+Layout/LeadingCommentSpace:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+  Enabled: false
+
+Style/NumericPredicate:
+  Enabled: false
+
+Style/MultilineBlockChain:
+  Enabled: false
+
+Style/BlockDelimiters:
+  Enabled: false
+
+Style/WordArray:
+  Enabled: false
+
+Style/SymbolArray:
+  Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/EmptyMethod:
+  Enabled: false
+
+Style/RedundantReturn:
+  Enabled: false
+
+# I think there are times when using self.foo improves readability
+Style/RedundantSelf:
+  Enabled: false
+
+Style/RedundantException:
+  Enabled: false
+
+Style/NegatedIf:
+  Enabled: false
+
+Style/ConditionalAssignment:
+  Enabled: false
+
+Style/TrailingCommaInArrayLiteral:
+  Enabled: false
+
+Style/TrailingCommaInHashLiteral:
+  Enabled: false
+
+Style/Next:
+  Enabled: false
+
+Style/NumericLiterals:
+  Enabled: false
+
+Style/RaiseArgs:
+  Enabled: false
+
+Style/TrailingCommaInArguments:
+  Enabled: false
+
+# Honestly shut up rubocop this is a stupid rule
+Style/EmptyElse:
+  Enabled: false
+
+Layout/LineLength:
+  Description: "Limit lines to 80 characters."
+  StyleGuide: "https://github.com/bbatsov/ruby-style-guide#80-character-limits"
+  Enabled: false
+
+Style/Documentation:
+  Description: "Document classes and non-namespace modules."
+  Enabled: false
+
+Rails/HasAndBelongsToMany:
+  Description: "Prefer has_many :through to has_and_belongs_to_many."
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Rails/HttpPositionalArguments:
+  Enabled: false
+
+Rails/ApplicationRecord:
+  Enabled: false
+
+Lint/UnifiedInteger:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Layout/EmptyLinesAroundExceptionHandlingKeywords:
+  Enabled: false
+
+Style/GuardClause:
+  Enabled: false
+
+Style/Lambda:
+  Enabled: false
+
+Style/LambdaCall:
+  Enabled: false
+
+Layout/MultilineMethodCallBraceLayout:
+  Enabled: false
+
+Layout/ClosingParenthesisIndentation:
+  Enabled: false
+
+Layout/TrailingEmptyLines:
+  Enabled: true
+
+Layout/IndentationWidth:
+  Enabled: true
+
+Layout/ElseAlignment:
+  Enabled: false
+
+Layout/EndAlignment:
+  Enabled: true
+  EnforcedStyleAlignWith: variable
+
+Layout/CaseIndentation:
+  Enabled: false
+
+Layout/MultilineAssignmentLayout:
+  Enabled: true
+  EnforcedStyle: same_line
+
+Rails/UnknownEnv:
+  Environments:
+    - staging
+    - development
+    - test
+    - production
+    - aus_production
+    - in_production
+    - us_production
+
+Naming/AccessorMethodName:
+  Enabled: false
+
+Naming/VariableNumber:
+  Enabled: false
+
+Style/StringConcatenation:
+  Enabled: false
+
+Style/RedundantFileExtensionInRequire:
+  Enabled: false
+
+Style/RedundantAssignment:
+  Enabled: false
+
+Rails/Blank:
+  Enabled: false
+
+Style/CaseLikeIf:
+  Enabled: true
+
+Layout/EndOfLine:
+  Enabled: true
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Rails/SkipsModelValidations:
+  Enabled: false
+
+Layout/HashAlignment:
+  Enabled: true
