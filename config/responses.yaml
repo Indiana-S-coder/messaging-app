@@ -38,6 +38,12 @@ UNAUTHORIZED:
   message: "You are not authorized to perform this action."
   type: "error"
 
+FORBIDDEN:
+  title: "Forbidden"
+  message: "You do not have permission to access this resource."
+  type: "error"
+  code: "FORBIDDEN"
+
 INTERNAL_ERROR:
   title: "Internal Server Error"
   message: "Something went wrong on our end. Please try again later."
