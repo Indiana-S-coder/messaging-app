@@ -28,7 +28,11 @@ class Api::V1::ConversationsController < ApplicationController
 
     form.save
 
-    render ResponseWrapper.parse('RECORD_CREATE_SUCCESS', status: :created, data: form.conversation, resource: Api::V1::ConversationResource, resource_params: { include_participants: true }, record: 'Conversation')
+    if form.newly_created?
+      render ResponseWrapper.parse('RECORD_CREATE_SUCCESS', status: :created, data: form.conversation, resource: Api::V1::ConversationResource, resource_params: { include_participants: true }, record: 'Conversation')
+    else
+      render ResponseWrapper.parse('SUCCESS', status: :ok, data: form.conversation, resource: Api::V1::ConversationResource, resource_params: { include_participants: true })
+    end
   end
 
   private

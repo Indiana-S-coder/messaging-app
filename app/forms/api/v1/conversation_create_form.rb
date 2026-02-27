@@ -7,12 +7,20 @@ class Api::V1::ConversationCreateForm
   validate :users_exist
 
   def save
-    @conversation = find_existing_conversation || create_new_conversation
+    @conversation = find_existing_conversation
+    if @conversation
+      @newly_created = false
+    else
+      @conversation = create_new_conversation
+      @newly_created = true
+    end
   end
 
-  def conversation
-    @conversation
+  def newly_created?
+    @newly_created
   end
+
+  attr_reader :conversation
 
   def errors_response
     ResponseWrapper.parse(
@@ -41,10 +49,10 @@ class Api::V1::ConversationCreateForm
     return nil unless normalized_user_ids.length == 2
 
     Conversation.joins(:conversation_participants)
-                .where(conversation_participants: { user_id: normalized_user_ids })
-                .group("conversations.id")
-                .having("COUNT(conversation_participants.user_id) = 2")
-                .first
+      .where(conversation_participants: { user_id: normalized_user_ids })
+      .group("conversations.id")
+      .having("COUNT(conversation_participants.user_id) = 2")
+      .first
   end
 
   def create_new_conversation
