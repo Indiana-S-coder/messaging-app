@@ -9,7 +9,7 @@ class Api::V1::ConversationsController < ApplicationController
     render ResponseWrapper.paginate(
       conversations,
       resource: Api::V1::ConversationResource,
-      pagination_params:
+      paginate_params: pagination_params
     )
   end
 
