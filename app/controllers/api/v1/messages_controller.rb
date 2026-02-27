@@ -18,6 +18,7 @@ class Api::V1::MessagesController < ApplicationController
 
     render ResponseWrapper.parse(
       data: @message,
+      status: :created,
       resource: Api::V1::MessageResource
     )
   end
