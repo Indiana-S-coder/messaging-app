@@ -1,9 +1,9 @@
 require 'rails_helper'
 
 RSpec.describe Api::V1::MessagesController, type: :request do
-  let!(:user1) {create(:user)}
-  let!(:user2) {create(:user)}
-  let!(:conversation) {create(:conversation)}
+  let!(:user1) { create(:user) }
+  let!(:user2) { create(:user) }
+  let!(:conversation) { create(:conversation) }
   let(:token) { JsonWebToken.encode(user_id: user1.id) }
   let(:headers) { { "Authorization" => "Bearer #{token}" } }
 
@@ -19,15 +19,14 @@ RSpec.describe Api::V1::MessagesController, type: :request do
           post "/api/v1/messages",
                params: { conversation_id: conversation.id, content: "Hello World!" },
                headers: headers
-      }.to change(Message, :count).by(1)
+        }.to change(Message, :count).by(1)
 
-      expect(response).to have_http_status(:created)
+        expect(response).to have_http_status(:created)
 
-      json = JSON.parse(response.body)
-      data = json["data"]
+        json = JSON.parse(response.body)
 
-      expect(data["content"]).to eq("Hello World!")
-      expect(data["sender_id"]).to eq(user1.id)
+        expect(json["content"]).to eq("Hello World!")
+        expect(json["sender_id"]).to eq(user1.id)
       end
 
       it 'updates conversation updated_at timestamp' do
@@ -46,7 +45,7 @@ RSpec.describe Api::V1::MessagesController, type: :request do
     end
 
     context 'when user is not part of conversation' do
-      let!(:stranger) {create(:user)}
+      let!(:stranger) { create(:user) }
       let(:stranger_token) { JsonWebToken.encode(user_id: stranger.id) }
       let(:stranger_headers) { { "Authorization" => "Bearer #{stranger_token}" } }
 
@@ -55,14 +54,14 @@ RSpec.describe Api::V1::MessagesController, type: :request do
           post "/api/v1/messages",
                params: { conversation_id: conversation.id, content: "not allowed" },
                headers: stranger_headers
-       }.not_to change(Message, :count)
+        }.not_to change(Message, :count)
 
-       expect(response).to have_http_status(:forbidden)
+        expect(response).to have_http_status(:forbidden)
 
-       json = JSON.parse(response.body)
+        json = JSON.parse(response.body)
 
-       expect(json["error"]["code"]).to eq("FORBIDDEN")
-       expect(json["error"]["message"]).to eq("User not part of this conversation")
+        expect(json["code"]).to eq("FORBIDDEN")
+        expect(json["message"]).to eq("User not part of this conversation")
       end
     end
   end
