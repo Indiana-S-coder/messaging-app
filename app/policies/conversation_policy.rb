@@ -5,6 +5,16 @@ class ConversationPolicy
   end
 
   def show?
+    participant?
+  end
+
+  def create?
+    participant?
+  end
+
+  private
+
+  def participant?
     ConversationParticipant.exists?(
       conversation_id: @conversation.id,
       user_id: @user.id
