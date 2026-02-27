@@ -32,7 +32,7 @@ class ApplicationController < ActionController::API
     policy = policy_class.new(@current_user, record)
 
     unless policy.public_send(query)
-      render ResponseWrapper.parse("FORBIDDEN", status: :forbidden)
+      render ResponseWrapper.parse("FORBIDDEN", status: :forbidden, message: "User not part of this conversation")
     end
   end
 end
